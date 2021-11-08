@@ -7,6 +7,15 @@
 
 # Under Construction :construction:
 
+<!-- PROJECT LOGO -->
+<br />
+<p align="center">
+
+  <h3 align="center">Oligopaint the Y Chromosome</h3>
+
+  <p align="center">
+    Design efficient oligopaint probes for the Y Chr of any spp!
+
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 [contributors-shield]: https://img.shields.io/github/contributors/isabela42/OligoY.svg?style=for-the-badge
