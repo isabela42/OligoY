@@ -3,24 +3,20 @@
 usage(){
 echo '
 Written by Isabela Almeida
-Last modified January 23, 2024
+Last modified April 29, 2024
 
 Description: Runs OligoMiner and remaining OligoY steps for designing and
 filtering probes
 
 Produces temporary files and outputs Y chromosome probes file.
 
-Usage: bash ipda_scriptC_ProbeDesign.sh [-t target_chr.fasta] [-r reference_genome.fasta] [-c complete_tar.fasta] [-x "hom_reads*.fastq.gz"] [-o path/to/output/]
+Usage: bash ipda_scriptC_ProbeDesign.sh [-t target_chr.fasta] [-r reference_genome.fasta] [-x "hom_reads*.fastq.gz"] [-o path/to/output/]
 
 ## Input:
 
 -t <target_chr.fasta>       path/to/target/singleline.fasta
 -r <reference_genome.fasta> path/to/Reference Genomes FASTA file
 -x <"hom_reads*.fastq.gz">  path/to/Homozygote FASTQ files (e.g. Female reads)
-
--c <coverage.cov>           path/to/Coverage COV file. If no coverage info is
-                            available, create a coverage file with
-                            grep ">" ${tar_fasta} | cut -d" " -f1 | cut -d">" -f2 | while read gi; do echo -e "$gi\t100\t300" >> coverage.cov ; done
 -o <path/to/output/>        Path to output directory in which files will be
                             saved (Script creates the directory)
 
@@ -66,15 +62,14 @@ bedFastq=scripts/bedFastq.py # Isabela Almeida's script to return a .fastq file 
 #................................................
 
 ## Get parameters from command line flags
-while getopts "t:r:c:x:o:" flag
+while getopts "t:r:x:o:" flag
 do
     case "${flag}" in
         t) tar_fasta=${OPTARG};;            # path/to/target/singleline.fasta
         r) ref_fasta=${OPTARG};;            # path/to/Reference Genome FASTA file
-        c) complete_tar_fasta=${OPTARG};;   # path/to/target/multiline.fasta
         x) hom_fastq="${OPTARG}";;          # path/to/Homozygote FASTQ files
         o) out_path=${OPTARG};;             # Path to output directory
-        ?) echo script usage: bash ipda_scriptC_ProbeDesign.sh [-t target_chr.fasta] [-r reference_genome.fasta] [-c complete_tar.fasta] [-x "hom_reads*.fastq.gz"] [-o path/to/output/] >&2
+        ?) echo script usage: bash ipda_scriptC_ProbeDesign.sh [-t target_chr.fasta] [-r reference_genome.fasta] [-x "hom_reads*.fastq.gz"] [-o path/to/output/] >&2
            exit;;
     esac
 done
@@ -94,7 +89,7 @@ bt2parameters="--no-hd -t -k 2 --very-sensitive-local" # change bowtie2 NGS alig
 ## Get input files stem
 hom_stem=`echo "$(basename "${hom_fastq%%.*}" | sed 's/\(.*\)\..*/\1/')" | sed 's/\*//g'`
 ref_stem=`echo "$(basename "${ref_fasta%%.*}" | sed 's/\(.*\)\..*/\1/')"`
-tar_stem=`echo "$(basename "${complete_tar_fasta%%.*}" | sed 's/\(.*\)\..*/\1/')"`
+tar_stem=`echo "$(basename "${tar_fasta%%.*}" | sed 's/\(.*\)\..*/\1/')"`
 
 
 #................................................
@@ -187,7 +182,7 @@ bowtie2-build ${out_path}${hom_stem}.fasta ${out_path}${hom_stem} -q
 #................................................
 
 date ## Starting to create No Y Chr (Target) Genome GIs list at
-grep ">" ${complete_tar_fasta} | cut -d" " -f1 | cut -d"|" -f2 > ${out_path}tmpfile1_${tar_stem}_GIs
+grep ">" ${tar_fasta} | cut -d" " -f1 | cut -d"|" -f2 > ${out_path}tmpfile1_${tar_stem}_GIs
 sed 's/^/>gi|/' ${out_path}tmpfile1_${tar_stem}_GIs > ${out_path}tmpfile2_${tar_stem}_GIs
 sed 's/$/ /' ${out_path}tmpfile2_${tar_stem}_GIs > ${out_path}tmpfile3 ; mv ${out_path}tmpfile3 ${out_path}tmpfile2_${tar_stem}_GIs # To avoid the following e.g.: removes not only >gi|1 but also wrongly removes >gi|12
 grep ">" ${ref_fasta} > ${out_path}${ref_stem}_GIs
@@ -363,7 +358,6 @@ rm ${out_path}*bt2
 # allowing for easily retracing commands
 sed -i 's,${tar_fasta},'"${tar_fasta}"',g' "$logfile"
 sed -i 's,${ref_fasta},'"${ref_fasta}"',g' "$logfile"
-sed -i 's,${complete_tar_fasta},'"${complete_tar_fasta}"',g' "$logfile"
 sed -i 's,${hom_fastq},'"${hom_fastq}"',g' "$logfile"
 sed -i 's,${out_path},'"${out_path}"',g' "$logfile"
 sed -i 's,${bP_script},'"${bP_script}"',g' "$logfile"
